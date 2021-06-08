@@ -48,6 +48,13 @@ class AnimalEventTest extends AuthApiTestCase
         $this->assertArrayHasKey('countryId', $json);
         $this->assertArrayHasKey('eventDate', $json);
         $this->assertArrayHasKey('additionalAttributes', $json);
+        //Properties set by the AdministrativeDivisionsListener class
+        $this->assertArrayHasKey('villageId', $json);
+        $this->assertArrayHasKey('regionId', $json);
+        $this->assertArrayHasKey('districtId', $json);
+        $this->assertArrayHasKey('wardId', $json);
+        $this->assertArrayHasKey('longitude', $json);
+        $this->assertArrayHasKey('latitude', $json);
     }
 
     public function testGetItem()

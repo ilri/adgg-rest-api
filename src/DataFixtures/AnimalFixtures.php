@@ -29,6 +29,13 @@ class AnimalFixtures extends Fixture implements FixtureGroupInterface
             $animal->setAdditionalAttributes([
                '1' => 'test value',
             ]);
+            //Properties retrieved by the AdministrativeDivisionsListener
+            $animal->setVillageId(1);
+            $animal->setRegionId(1);
+            $animal->setDistrictId(1);
+            $animal->setWardId(1);
+            $animal->setLongitude(1);
+            $animal->setLatitude(1);
             $manager->persist($animal);
             $this->addReference(sprintf('animal_%s', $value), $animal);
         }

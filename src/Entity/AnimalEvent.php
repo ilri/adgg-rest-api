@@ -17,6 +17,7 @@ use App\EventListener\{
     MilkingEventListener
 };
 use App\Repository\AnimalEventRepository;
+use App\Validator\LactationNotFound;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -31,6 +32,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *     fields={"eventType", "eventDate", "animal"},
  *     message="An animal event of this type already exists for the animal on this date."
  * )
+ * @LactationNotFound
  */
 class AnimalEvent
 {

@@ -284,7 +284,9 @@ App\Entity\AnimalEvent:
       openapi_context:
         description:
           '<h3>Creates a AnimalEvent resource</h3><p>The following properties are **required** and need to be provided in the request body:
-          </p>`animal`<p>`countryId`</p>`eventDate`<p>`eventType`</p><p>All other properties are **optional**.</p>'
+          </p>`animal`<p>`countryId`</p>`eventDate`<p>`eventType`</p><p>All other properties are **optional**.</p>
+          <p>**Milking events**: The location of a milking event is assumed to be where the animal''s farm is registered.<br>If that is not the case,
+          please provide **one or more** of the following location-specific properties: `regionId`, `districtId`, `wardId`, `villageId`.</p>'
   itemOperations:
     get:
       method: get

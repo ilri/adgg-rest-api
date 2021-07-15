@@ -49,6 +49,11 @@ class MilkingEventListener
         }
 
         $eventId = $milkingEvent->getId();
+
+        if (!$this->validateMilkingEvent($milkingEvent)) {
+            return;
+        };
+
         $calvingEvent = $this->animalEventRepository->findOneCalvingEventById($milkingEvent->getLactationId());
         $dim = $this->getDIMForMilkingEvent($eventId);
         $emy = $this->getEMYForMilkingEvent($eventId);
@@ -131,5 +136,30 @@ class MilkingEventListener
         } else {
             return '';
         }
+    }
+
+    /**
+     * Checks whether a milking event derives from an animal
+     * under the age of 8, and without any exit events.
+     *
+     * @param AnimalEvent $milkingEvent
+     * @return bool
+     */
+    private function validateMilkingEvent(AnimalEvent $milkingEvent): bool
+    {
+        $animal = $milkingEvent->getAnimal();
+        $animalAge = Carbon::now()->diff($animal->getBirthdate())->y;
+        $exitEvents = $animal
+            ->getAnimalEvents()
+            ->filter(function (AnimalEvent $element) {
+                return $element->getEventType() == AnimalEvent::EVENT_TYPE_EXITS;
+            })
+            ->getValues();
+
+        if ($animalAge < 8 && !$exitEvents) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -48,12 +48,11 @@ class MilkingEventListener
             return;
         }
 
-        $eventId = $milkingEvent->getId();
-
         if (!$this->validateMilkingEvent($milkingEvent)) {
             return;
         };
 
+        $eventId = $milkingEvent->getId();
         $calvingEvent = $this->animalEventRepository->findOneCalvingEventById($milkingEvent->getLactationId());
         $dim = $this->getDIMForMilkingEvent($eventId);
         $emy = $this->getEMYForMilkingEvent($eventId);
@@ -139,8 +138,9 @@ class MilkingEventListener
     }
 
     /**
-     * Checks whether a milking event derives from an animal
-     * under the age of 8, and without any exit events.
+     * Returns true only if a milking event derives from a cow
+     * younger than 8 years and has no exit events that indicate
+     * the cow has died.
      *
      * @param AnimalEvent $milkingEvent
      * @return bool
@@ -171,11 +171,11 @@ class MilkingEventListener
      */
     private function checkCowAlive($exitEvents): bool
     {
-        $acceptableReasons = [13,12,11,4,2];
+        $acceptableReasons = [2, 4, 11, 12, 13];
         $disposalReasons = array_map(fn($event)=>$event->getAdditionalAttributes()[247], $exitEvents);
 
-        foreach($disposalReasons as $reason){
-            if(!in_array($reason, $acceptableReasons)){
+        foreach ($disposalReasons as $reason) {
+            if (!in_array($reason, $acceptableReasons)) {
                 return false;
             }
         }

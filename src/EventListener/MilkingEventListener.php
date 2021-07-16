@@ -155,11 +155,30 @@ class MilkingEventListener
                 return $element->getEventType() == AnimalEvent::EVENT_TYPE_EXITS;
             })
             ->getValues();
+        //Cow assumed alive if no exit events are present
+        $cowAlive = $exitEvents ? $this->checkCowAlive($exitEvents) : true;
 
-        if ($animalAge < 8 && !$exitEvents) {
-            return true;
+        return $animalAge < 8 && $cowAlive;
+    }
+
+    /**
+     * Retrieves all disposal reasons from the additional attributes array
+     * on an exit event. If any of these do not match the acceptable reasons,
+     * cow is assumed to have died.
+     *
+     * @param $exitEvents
+     * @return bool
+     */
+    private function checkCowAlive($exitEvents): bool
+    {
+        $acceptableReasons = [13,12,11,4,2];
+        $disposalReasons = array_map(fn($event)=>$event->getAdditionalAttributes()[247], $exitEvents);
+
+        foreach($disposalReasons as $reason){
+            if(!in_array($reason, $acceptableReasons)){
+                return false;
+            }
         }
-
-        return false;
+        return true;
     }
 }

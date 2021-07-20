@@ -47,10 +47,10 @@ class MilkingEventListener
         if ($milkingEvent->getLactationId() == null) {
             return;
         }
-
-        if (!$this->validateMilkingEvent($milkingEvent)) {
+        $recordCheck = $this->validateMilkingEvent($milkingEvent);
+        if (!($recordCheck['cowAgeWithinRange'] && $recordCheck['cowAlive'])) {
             return;
-        };
+        }
 
         $eventId = $milkingEvent->getId();
         $calvingEvent = $this->animalEventRepository->findOneCalvingEventById($milkingEvent->getLactationId());
@@ -58,6 +58,7 @@ class MilkingEventListener
         $emy = $this->getEMYForMilkingEvent($eventId);
         $totalMilkRecord = $this->getTotalMilkRecord($milkingEvent);
         $feedback = $this->getFeedbackForFarmer($totalMilkRecord, $emy);
+        $farmId = $milkingEvent->getAnimal()->getFarm()->getId();
         $milkYieldRecord = new MilkYieldRecord();
         $milkYieldRecord
             ->setId($eventId)
@@ -68,14 +69,99 @@ class MilkingEventListener
             ->setUpperLimit($emy['TU'])
             ->setLowerLimit($emy['TL'])
             ->setFeedback($feedback)
+            ->setFarmId($farmId)
+            ->setFarmRelocation($recordCheck['farmRelocation'])
         ;
 
         $milkingEvent->setMilkYieldRecord($milkYieldRecord);
     }
 
     /**
+     * Returns an array containing information on
+     * whether the cow is of an appropriate age,
+     * alive and has relocated to another farm.
+     *
+     * @param AnimalEvent $milkingEvent
+     * @return array
+     */
+    private function validateMilkingEvent(AnimalEvent $milkingEvent): array
+    {
+        $animal = $milkingEvent->getAnimal();
+        $exitEvents = $this->retrieveExitEvents($milkingEvent);
+
+        $cowAgeWithinRange = $this->checkCowAgeWithinRange($animal, 8);
+        $farmRelocation = $exitEvents && $this->checkFarmRelocation($exitEvents);
+        $cowAlive = !$exitEvents || $farmRelocation;
+
+        return [
+            'cowAgeWithinRange' => $cowAgeWithinRange,
+            'cowAlive' => $cowAlive,
+            'farmRelocation' => $farmRelocation,
+        ];
+    }
+
+    /**
+     * Checks whether a cow is within the specified age range.
+     *
+     * @param $animal
+     * @param $maximumAge
+     * @return bool
+     */
+    private function checkCowAgeWithinRange($animal, $maximumAge): bool
+    {
+        $animalAge = Carbon::now()->diff($animal->getBirthdate())->y;
+
+        return $animalAge < $maximumAge;
+    }
+
+    /**
+     * Retrieves the animal that is associated with the
+     * milking event and returns all of its exit events.
+     *
+     * @param AnimalEvent $milkingEvent
+     * @return array
+     */
+    private function retrieveExitEvents(AnimalEvent $milkingEvent): array
+    {
+        $animal = $milkingEvent->getAnimal();
+
+        return $animal
+            ->getAnimalEvents()
+            ->filter(
+                function (AnimalEvent $event) {
+                    return $event->getEventType() == AnimalEvent::EVENT_TYPE_EXITS;
+                }
+            )
+            ->getValues();
+    }
+
+    /**
+     * Iterates through all exit events and checks
+     * whether the reasons of disposal indicate
+     * a farm relocation rather than death.
+     *
+     */
+    private function checkFarmRelocation($exitEvents): bool
+    {
+        //indicate farm relocation
+        $acceptableReasons = [2, 4, 11, 12, 13];
+        $disposalReasons = array_map(
+            fn($event) => $event->getAdditionalAttributes()[247],
+            $exitEvents
+        );
+
+        foreach ($disposalReasons as $reason) {
+            if (!in_array($reason, $acceptableReasons)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @param int $id
-     * @return int
+     * @return int|null
      * @throws NonUniqueResultException
      */
     private function getDIMForMilkingEvent(int $id): ?int
@@ -135,50 +221,5 @@ class MilkingEventListener
         } else {
             return '';
         }
-    }
-
-    /**
-     * Returns true only if a milking event derives from a cow
-     * younger than 8 years and has no exit events that indicate
-     * the cow has died.
-     *
-     * @param AnimalEvent $milkingEvent
-     * @return bool
-     */
-    private function validateMilkingEvent(AnimalEvent $milkingEvent): bool
-    {
-        $animal = $milkingEvent->getAnimal();
-        $animalAge = Carbon::now()->diff($animal->getBirthdate())->y;
-        $exitEvents = $animal
-            ->getAnimalEvents()
-            ->filter(function (AnimalEvent $element) {
-                return $element->getEventType() == AnimalEvent::EVENT_TYPE_EXITS;
-            })
-            ->getValues();
-        //Cow assumed alive if no exit events are present
-        $cowAlive = $exitEvents ? $this->checkCowAlive($exitEvents) : true;
-
-        return $animalAge < 8 && $cowAlive;
-    }
-
-    /**
-     * Retrieves all disposal reasons from the additional attributes array
-     * on an exit event. If any of these do not match the acceptable reasons,
-     * cow is assumed to have died.
-     *
-     * @param $exitEvents
-     * @return bool
-     */
-    private function checkCowAlive($exitEvents): bool
-    {
-        $acceptableReasons = [2, 4, 11, 12, 13];
-        $disposalReasons = array_map(fn($event)=>$event->getAdditionalAttributes()[247], $exitEvents);
-
-        foreach ($disposalReasons as $reason) {
-            if (!in_array($reason, $acceptableReasons)) {
-                return false;
-            }
-        }
-        return true;
     }
 }

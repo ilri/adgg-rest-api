@@ -44,6 +44,15 @@ class MilkYieldRecord
      */
     private $feedback;
 
+    /**
+     * @var int
+     */
+    private $farmId;
+
+    /**
+     * @var bool
+     */
+    private $farmRelocation;
 
     public function getId(): ?int
     {
@@ -137,6 +146,31 @@ class MilkYieldRecord
     public function setFeedback(string $feedback): self
     {
         $this->feedback = $feedback;
+
+        return $this;
+    }
+
+
+    public function getFarmId(): ?int
+    {
+        return $this->farmId;
+    }
+
+    public function setFarmId(int $farmId): self
+    {
+        $this->farmId = $farmId;
+
+        return $this;
+    }
+
+    public function getFarmRelocation(): ?bool
+    {
+        return $this->farmRelocation;
+    }
+
+    public function setFarmRelocation(bool $farmRelocation): self
+    {
+        $this->farmRelocation = $farmRelocation;
 
         return $this;
     }

@@ -37,3 +37,14 @@ App\Entity\MilkYieldRecord:
                 "animalevent:collection:get",
                 "animalevent:item:get",
             ]
+        farmId:
+            groups: [
+                "animalevent:collection:get",
+                "animalevent:item:get",
+            ]
+        farmRelocation:
+            groups: [
+                "animalevent:collection:get",
+                "animalevent:item:get",
+            ]
+

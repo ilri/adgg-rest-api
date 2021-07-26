@@ -112,15 +112,28 @@ final class LactationFinderCommand extends Command
         $animalEventRepository = $this->em->getRepository(AnimalEvent::class);
         $paginator = new Paginator($animalEventRepository->findOrphanedMilkingEvents(), false);
 
+        //Process user choice to limit the number of processed orphaned milking events
+        $choice = $io->choice(
+            'Would you like to limit the number of orphaned milking events processed?',
+            ['yes', 'no']
+        );
+        if ($choice == 'yes'){
+            $userLimit = $io->ask(sprintf(
+                'What number of orphaned milking events would you like to process? The maximum is %s.',
+                $paginator->count()
+            ));
+        }
+
+        $recordLimit = $userLimit < $paginator->count() ? $userLimit : $paginator->count();
         $offset = 0;
 
         $io->info(sprintf(
             "%d orphaned milking records have been retrieved from the database and will now be processed.",
-            $paginator->count()
+            $recordLimit
         ));
-        $io->progressStart($paginator->count());
+        $io->progressStart($recordLimit);
 
-        while ($offset < $paginator->count()) {
+        while ($offset < $recordLimit) {
             $page = new Paginator(
                 $animalEventRepository->findOrphanedMilkingEvents(
                     $offset,

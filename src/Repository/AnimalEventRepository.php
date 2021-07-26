@@ -135,6 +135,7 @@ class AnimalEventRepository extends ServiceEntityRepository
 
         return $this->addMilkingEventQueryBuilder($queryBuilder)
             ->andWhere('a.lactationId IS NULL')
+            ->orderBy('a.eventDate', 'ASC')
             ->setFirstResult($offset)
             ->setMaxResults($pageSize)
         ;

@@ -14,6 +14,7 @@ class AnimalUnitTest extends TestCase
     private static $animal;
     private static $milkingEvent1;
     private static $milkingEvent2;
+    private static $milkingEventCollection;
     private static $calvingEvent1;
     private static $calvingEvent2;
     private static $animalEvent;
@@ -45,6 +46,7 @@ class AnimalUnitTest extends TestCase
                 '68' => '5', //Milk Mid Day (Litres)
             ]
         );
+        self::$milkingEventCollection = new ArrayCollection([self::$milkingEvent1, self::$milkingEvent2]);
 
         self::$calvingEvent1 = new AnimalEvent();
         self::$calvingEvent1->setEventType(AnimalEvent::EVENT_TYPE_CALVING);
@@ -66,10 +68,15 @@ class AnimalUnitTest extends TestCase
         self::$milkYieldRecord->setFeedback('');
 
         self::$animal = new Animal();
-        self::$animal->addAnimalEvent(self::$milkingEvent1);
-        self::$animal->addAnimalEvent(self::$milkingEvent2);
-        self::$animal->addAnimalEvent(self::$calvingEvent1);
-        self::$animal->addAnimalEvent(self::$calvingEvent2);
+        self::$animal->getAnimalEvents()[] = self::$milkingEvent1;
+        self::$milkingEvent1->setAnimal(self::$animal);
+        self::$animal->getAnimalEvents()[] = self::$milkingEvent2;
+        self::$milkingEvent2->setAnimal(self::$animal);
+        self::$animal->getAnimalEvents()[] = self::$calvingEvent1;
+        self::$calvingEvent1->setAnimal(self::$animal);
+        self::$animal->getAnimalEvents()[] = self::$calvingEvent2;
+        self::$calvingEvent2->setAnimal(self::$animal);
+
         self::$milkingEvent1->setMilkYieldRecord(self::$milkYieldRecord);
         self::$milkingEvent2->setMilkYieldRecord(self::$milkYieldRecord);
     }
@@ -110,8 +117,7 @@ class AnimalUnitTest extends TestCase
 
     public function testGetMilkingEvents()
     {
-        $milkingEvents = new ArrayCollection([self::$milkingEvent1, self::$milkingEvent2]);
-        $this->assertEquals($milkingEvents, self::$animal->getMilkingEvents());
+        $this->assertEquals(self::$milkingEventCollection, self::$animal->getMilkingEvents());
     }
 
     public function testGetLastMilkingEvent()
@@ -122,12 +128,11 @@ class AnimalUnitTest extends TestCase
 
     public function testGetAverageMilkYield()
     {
-        $milkingEvents = new ArrayCollection([self::$milkingEvent1, self::$milkingEvent2]);
         $func = function ($event) {
             return $event->getMilkYieldRecord()->getTotalMilkRecord();
         };
-        $milkYieldRecords = array_map($func, $milkingEvents->toArray());
-        $averageMilkYield = array_sum($milkYieldRecords) / count($milkingEvents);
+        $milkYieldRecords = array_map($func, self::$milkingEventCollection->toArray());
+        $averageMilkYield = array_sum($milkYieldRecords) / count(self::$milkingEventCollection);
 
         $this->assertEquals($averageMilkYield, self::$animal->getAverageMilkYield());
     }

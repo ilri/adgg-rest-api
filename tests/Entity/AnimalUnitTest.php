@@ -20,12 +20,12 @@ class AnimalUnitTest extends TestCase
     private static $animalEvent;
     private static $milkYieldRecord;
 
-    public static function setUpBeforeClass(): void
+    public function setUp(): void
     {
         self::$milkingEvent1 = new AnimalEvent();
         self::$milkingEvent1->setEventType(AnimalEvent::EVENT_TYPE_MILKING);
         self::$milkingEvent1->setCountryId(1);
-        self::$milkingEvent1->setEventDate(new \DateTime('2020-01-01'));
+        self::$milkingEvent1->setEventDate(new \DateTime('2021-01-01'));
         self::$milkingEvent1->setLactationId(1);
         self::$milkingEvent1->setAdditionalAttributes(
             [
@@ -37,7 +37,7 @@ class AnimalUnitTest extends TestCase
         self::$milkingEvent2 = new AnimalEvent();
         self::$milkingEvent2->setEventType(AnimalEvent::EVENT_TYPE_MILKING);
         self::$milkingEvent2->setCountryId(2);
-        self::$milkingEvent2->setEventDate(new \DateTime('2021-01-01'));
+        self::$milkingEvent2->setEventDate(new \DateTime('2020-01-01'));
         self::$milkingEvent2->setLactationId(2);
         self::$milkingEvent2->setAdditionalAttributes(
             [
@@ -51,11 +51,11 @@ class AnimalUnitTest extends TestCase
         self::$calvingEvent1 = new AnimalEvent();
         self::$calvingEvent1->setEventType(AnimalEvent::EVENT_TYPE_CALVING);
         self::$calvingEvent1->setCountryId(1);
-        self::$calvingEvent1->setEventDate(new \DateTime('2020-01-01'));
+        self::$calvingEvent1->setEventDate(new \DateTime('2021-01-01'));
         self::$calvingEvent2 = new AnimalEvent();
         self::$calvingEvent2->setEventType(AnimalEvent::EVENT_TYPE_CALVING);
         self::$calvingEvent2->setCountryId(2);
-        self::$calvingEvent2->setEventDate(new \DateTime('2021-01-01'));
+        self::$calvingEvent2->setEventDate(new \DateTime('2020-01-01'));
 
         self::$milkYieldRecord = new MilkYieldRecord();
         self::$milkYieldRecord->setId(1);

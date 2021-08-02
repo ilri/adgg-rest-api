@@ -98,21 +98,19 @@ class AnimalUnitTest extends TestCase
 
     public function testGetLastCalving()
     {
-        //$this->assertEquals(self::$calvingEvent2, self::$animal->getLastCalving());
-        $this->markTestIncomplete('Need to find way to sort on getLastCalving()');
+        $this->assertEquals(self::$calvingEvent1, self::$animal->getLastCalving());
     }
 
     public function testGetCalvingInterval()
     {
-        $days = Carbon::now()->diff(self::$calvingEvent2->getEventDate())->days;
+        $days = Carbon::now()->diff(self::$calvingEvent1->getEventDate())->days;
         $alarm = $days > 365;
 
         $expectedCalvingInterval = [
             'days_since_last_calving' => $days,
             'alarm' => $alarm,
         ];
-        //$this->assertEquals($expectedCalvingInterval, self::$animal->getCalvingInterval());
-        $this->markTestIncomplete('Need to find way to sort on getLastCalving()');
+        $this->assertEquals($expectedCalvingInterval, self::$animal->getCalvingInterval());
     }
 
     public function testGetMilkingEvents()
@@ -122,8 +120,7 @@ class AnimalUnitTest extends TestCase
 
     public function testGetLastMilkingEvent()
     {
-        //$this->assertEquals(self::$milkingEvent2, self::$animal->getLastMilkingEvent());
-        $this->markTestIncomplete('Need to find way to sort on getLastMilking()');
+        $this->assertEquals(self::$milkingEvent1, self::$animal->getLastMilkingEvent());
     }
 
     public function testGetAverageMilkYield()

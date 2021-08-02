@@ -81,10 +81,18 @@ final class LactationFinderCommand extends Command
         ];
         $now = new \DateTime();
 
-        $writer = Writer::createFromPath(
-            sprintf($this->projectDir.self::OUTPUT_DIR.self::OUTPUT_FILE, $now->format('Y_m_d_H_i_s')),
-            'w'
-        );
+        try {
+            $writer = Writer::createFromPath(
+                sprintf(
+                    $this->projectDir.self::OUTPUT_DIR.self::OUTPUT_FILE, $now->format('Y_m_d_H_i_s')),
+                'w'
+            );
+        } catch (\Exception $exception){
+            echo(sprintf(
+                "Please ensure the following output directory has been created: %s\n",
+                $this->projectDir.self::OUTPUT_DIR));
+            exit;
+        }
 
         $writer->insertOne($header);
 

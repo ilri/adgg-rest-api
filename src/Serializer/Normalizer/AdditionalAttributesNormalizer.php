@@ -6,20 +6,19 @@ use App\Entity\TableAttribute;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Normalizer\{
     AbstractObjectNormalizer,
-    CacheableSupportsMethodInterface,
+    ContextAwareNormalizerInterface,
     DenormalizerInterface,
-    NormalizerInterface,
-    ObjectNormalizer
+    NormalizerAwareInterface,
+    NormalizerAwareTrait
 };
 
-class AdditionalAttributesNormalizer implements NormalizerInterface, DenormalizerInterface, CacheableSupportsMethodInterface
+class AdditionalAttributesNormalizer implements ContextAwareNormalizerInterface, DenormalizerInterface, NormalizerAwareInterface
 {
-    private const TRAIT = 'App\Entity\Traits\AdditionalAttributesTrait';
+    use NormalizerAwareTrait;
 
-    /**
-     * @var ObjectNormalizer
-     */
-    private $normalizer;
+    private const ALREADY_CALLED = 'ADDITIONAL_ATTRIBUTES_NORMALIZER_ALREADY_CALLED';
+
+    private const TRAIT = 'App\Entity\Traits\AdditionalAttributesTrait';
 
     /**
      * @var EntityManagerInterface
@@ -28,12 +27,10 @@ class AdditionalAttributesNormalizer implements NormalizerInterface, Denormalize
 
     /**
      * AdditionalAttributesNormalizer constructor.
-     * @param ObjectNormalizer $normalizer
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(ObjectNormalizer $normalizer, EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->normalizer = $normalizer;
         $this->em = $entityManager;
     }
 
@@ -42,6 +39,8 @@ class AdditionalAttributesNormalizer implements NormalizerInterface, Denormalize
      */
     public function normalize($object, $format = null, array $context = [])
     {
+        $context[self::ALREADY_CALLED] = true;
+
         $context[AbstractObjectNormalizer::CIRCULAR_REFERENCE_HANDLER] = function ($object, $format, $context) {
             return [$object->getId()];
         };
@@ -57,47 +56,6 @@ class AdditionalAttributesNormalizer implements NormalizerInterface, Denormalize
         }
 
         return $data;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function denormalize($data, string $type, string $format = null, array $context = [])
-    {
-        //Checks whether object contains additional attributes
-        $additionalAttributes = $data['additionalAttributes'] ?? null;
-
-        //Updates the additional attributes array
-        if ($additionalAttributes){
-            $modifiedAttributes = $this->updateAdditionalAttributes($additionalAttributes, 'denormalize');
-            $data['additionalAttributes'] = $modifiedAttributes;
-        }
-
-        return $this->normalizer->denormalize($data, $type, $format, $context);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsNormalization($data, $format = null): bool
-    {
-        return 'object' === gettype($data) && in_array(self::TRAIT, class_uses($data));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization($data, string $type, string $format = null): bool
-    {
-        return 'object' === gettype($data) && in_array(self::TRAIT, class_uses($data));
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return true;
     }
 
     /**
@@ -141,7 +99,7 @@ class AdditionalAttributesNormalizer implements NormalizerInterface, Denormalize
     {
         $attr = $this->em->getRepository(TableAttribute::class)->find($identifier);
 
-        return $attr ? $attr->getAttributeLabel(): null;
+        return $attr ? $attr->getAttributeLabel() : null;
     }
 
     /**
@@ -154,9 +112,47 @@ class AdditionalAttributesNormalizer implements NormalizerInterface, Denormalize
     private function retrieveAttributeId(string $label): ?int
     {
         $attr = $this->em->getRepository(TableAttribute::class)
-            ->findOneBy(['attributeLabel' => trim($label)])
-        ;
+            ->findOneBy(['attributeLabel' => trim($label)]);
 
         return $attr ? $attr->getId() : null;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function denormalize($data, string $type, string $format = null, array $context = [])
+    {
+        //Checks whether object contains additional attributes
+        $additionalAttributes = $data['additionalAttributes'] ?? null;
+
+        //Updates the additional attributes array
+        if ($additionalAttributes) {
+            $modifiedAttributes = $this->updateAdditionalAttributes($additionalAttributes, 'denormalize');
+            $data['additionalAttributes'] = $modifiedAttributes;
+        }
+
+        return $this->normalizer->denormalize($data, $type, $format, $context);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supportsNormalization($data, $format = null, array $context = []): bool
+    {
+        // avoid recursion: only call once per object
+        if (isset($context[self::ALREADY_CALLED])) {
+            return false;
+        }
+
+        return 'object' === gettype($data) && in_array(self::TRAIT, class_uses($data));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization($data, string $type, string $format = null): bool
+    {
+        return 'object' === gettype($data) && in_array(self::TRAIT, class_uses($data));
+    }
+
 }

@@ -40,6 +40,7 @@ final class LactationFinderCommand extends Command
     c) whether the lactation (if found) has been successfully assigned to the milking record. 
     You can limit the number of orphaned milking records at the start of the command. 
     Please note these are sorted by event date, from the most recent to the last.';
+
     /**
      * @var EntityManagerInterface
      */
@@ -93,13 +94,16 @@ final class LactationFinderCommand extends Command
         try {
             $writer = Writer::createFromPath(
                 sprintf(
-                    $this->projectDir.self::OUTPUT_DIR.self::OUTPUT_FILE, $now->format('Y_m_d_H_i_s')),
+                    $this->projectDir.self::OUTPUT_DIR.self::OUTPUT_FILE,
+                    $now->format('Y_m_d_H_i_s')
+                ),
                 'w'
             );
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             echo(sprintf(
                 "Please ensure the following output directory has been created: %s\n",
-                $this->projectDir.self::OUTPUT_DIR));
+                $this->projectDir.self::OUTPUT_DIR
+            ));
             exit;
         }
 
@@ -108,7 +112,7 @@ final class LactationFinderCommand extends Command
         return $writer;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDescription(self::$defaultDescription);
         $this->setHelp(self::$defaultHelp);
@@ -135,20 +139,24 @@ final class LactationFinderCommand extends Command
             'Would you like to limit the number of orphaned milking events processed?',
             ['yes', 'no']
         );
-        if ($choice == 'yes'){
-            $userLimit = $io->ask(sprintf(
-                'What number of orphaned milking events would you like to process? The maximum is %s.',
-                $paginator->count()
-            ));
+        if ($choice == 'yes') {
+            $userLimit = $io->ask(
+                sprintf(
+                    'What number of orphaned milking events would you like to process? The maximum is %s.',
+                    $paginator->count()
+                )
+            );
         }
 
         $recordLimit = $userLimit < $paginator->count() ? $userLimit : $paginator->count();
         $offset = 0;
 
-        $io->info(sprintf(
-            "%d orphaned milking records have been retrieved from the database and will now be processed.",
-            $recordLimit
-        ));
+        $io->info(
+            sprintf(
+                "%d orphaned milking records have been retrieved from the database and will now be processed.",
+                $recordLimit
+            )
+        );
         $io->progressStart($recordLimit);
 
         while ($offset < $recordLimit) {
@@ -183,7 +191,7 @@ final class LactationFinderCommand extends Command
      * if a calving event for that milking event exists.
      *
      * Logs the milking event ID, lactation ID and whether the assignment
-     * has been successful.
+     * has been successful by inserting a new row into the CSV file.
      *
      * @param AnimalEvent $record
      * @throws CannotInsertRecord
@@ -217,8 +225,7 @@ final class LactationFinderCommand extends Command
         $lastCalvingEvent = $this
             ->em
             ->getRepository(AnimalEvent::class)
-            ->findLastCalvingEvent($record)
-        ;
+            ->findLastCalvingEvent($record);
 
         if (!$lastCalvingEvent) {
             return null;

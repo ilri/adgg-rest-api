@@ -29,8 +29,17 @@ final class LactationFinderCommand extends Command
     /**
      * @var string
      */
-    protected static $defaultDescription = 'Finds and assigns a lactation to orphaned milking events';
+    protected static $defaultDescription = 'Finds and assigns a lactation to orphaned milking events.';
 
+    /**
+     * @var string
+     */
+    protected static $defaultHelp = 'A CSV file will be generated in your output directory to log 
+    a) the orphaned milking record,
+    b) the associated lactation (if found) and 
+    c) whether the lactation (if found) has been successfully assigned to the milking record. 
+    You can limit the number of orphaned milking records at the start of the command. 
+    Please note these are sorted by event date, from the most recent to the last.';
     /**
      * @var EntityManagerInterface
      */
@@ -102,6 +111,7 @@ final class LactationFinderCommand extends Command
     protected function configure()
     {
         $this->setDescription(self::$defaultDescription);
+        $this->setHelp(self::$defaultHelp);
     }
 
     /**

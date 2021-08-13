@@ -284,7 +284,19 @@ App\Entity\AnimalEvent:
       openapi_context:
         description:
           '<h3>Creates a AnimalEvent resource</h3><p>The following properties are **required** and need to be provided in the request body:
-          </p>`animal`<p>`countryId`</p>`eventDate`<p>`eventType`</p><p>All other properties are **optional**.</p>'
+          </p>`animal`<p>`countryId`</p>`eventDate`<p>`eventType`</p><p>All other properties are **optional**.</p>
+          <h3>An example POST request is illustrated below:</h3>
+          <pre>{
+              <br> "eventType": 2,
+              <br> "eventDate": "2021-01-01T10:10:10.000Z",
+              <br> "animal": "/api/animals/1",
+              <br> "additionalAttributes": {
+              <br>    "59":"10",
+              <br>    "61":"12",
+              <br>    "68":"10"
+              <br> },
+              <br> "countryId": 1
+          <br>}</pre>'
   itemOperations:
     get:
       method: get

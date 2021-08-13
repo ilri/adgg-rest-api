@@ -38,7 +38,7 @@ class AnimalEventTest extends AuthApiTestCase
                         '61' => '12',
                         '68' => '10',
                     ],
-                ]
+                ],
             ]
         );
         $this->assertResponseIsSuccessful();
@@ -64,7 +64,7 @@ class AnimalEventTest extends AuthApiTestCase
                         '61' => '12',
                         '68' => '10',
                     ],
-                ]
+                ],
             ]
         );
         $this->assertResponseStatusCodeSame(422);
@@ -104,7 +104,7 @@ class AnimalEventTest extends AuthApiTestCase
                         '61' => '6',
                         '68' => '5',
                     ],
-                ]
+                ],
             ]
         );
         $this->assertResponseIsSuccessful();
@@ -135,7 +135,7 @@ class AnimalEventTest extends AuthApiTestCase
             [
                 'auth_bearer' => $this->token,
                 'headers' => [
-                    'content-type' => 'application/merge-patch+json'
+                    'content-type' => 'application/merge-patch+json',
                 ],
                 'json' => [
                     'additionalAttributes' => [
@@ -143,7 +143,7 @@ class AnimalEventTest extends AuthApiTestCase
                         '61' => '10',
                         '68' => '8',
                     ],
-                ]
+                ],
             ]
         );
         $this->assertResponseIsSuccessful();
@@ -216,8 +216,13 @@ class AnimalEventTest extends AuthApiTestCase
 
     public function testPropertyFilter()
     {
-        //Specifying a property (e.g. eventType) with the PropertyFilter should successfully omit all other properties
-        $response = $this->client->request('GET', '/api/animal_events?properties[]=eventType', ['auth_bearer' => $this->token]);
+        //Specifying a property (e.g. eventType) with the PropertyFilter should
+        //successfully omit all other properties
+        $response = $this->client->request(
+            'GET',
+            '/api/animal_events?properties[]=eventType',
+            ['auth_bearer' => $this->token]
+        );
         $this->assertResponseIsSuccessful();
 
         $json = $response->toArray();
@@ -227,7 +232,11 @@ class AnimalEventTest extends AuthApiTestCase
 
     public function testSearchFilter()
     {
-        $response = $this->client->request('GET', '/api/animal_events?animal=/api/animals/1', ['auth_bearer' => $this->token]);
+        $response = $this->client->request(
+            'GET',
+            '/api/animal_events?animal=/api/animals/1',
+            ['auth_bearer' => $this->token]
+        );
         $this->assertResponseIsSuccessful();
 
         $json = $response->toArray();
@@ -236,11 +245,14 @@ class AnimalEventTest extends AuthApiTestCase
 
     public function testDateFilter()
     {
-        $response = $this->client->request('GET', '/api/animal_events?eventDate[strictly_before]=2021-01-01', ['auth_bearer' => $this->token]);
+        $response = $this->client->request(
+            'GET',
+            '/api/animal_events?eventDate[strictly_before]=2021-01-01',
+            ['auth_bearer' => $this->token]
+        );
         $this->assertResponseIsSuccessful();
 
         $json = $response->toArray();
         $this->assertEquals(0, $json['hydra:totalItems']);
     }
-
 }

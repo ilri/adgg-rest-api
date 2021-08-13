@@ -97,13 +97,7 @@ final class StaffRightsCommand extends Command
 
         $result = $this->generateResult($io);
 
-        try {
-            $this->generateOutput($result, $filename);
-        } catch (CannotInsertRecord $e) {
-            $io->error($e->getRecord());
-            $io->error('The CSV file could not be written.');
-            die;
-        }
+       $this->generateOutput($result, $filename);
 
         $io->success(sprintf('A CSV file %s has been created.', $filename));
 
@@ -231,7 +225,6 @@ final class StaffRightsCommand extends Command
     /**
      * @param array $result
      * @param string $filename
-     * @throws CannotInsertRecord
      */
     private function generateOutput(array $result, string $filename): void
     {
@@ -243,8 +236,27 @@ final class StaffRightsCommand extends Command
             'activity_order',
             'staff_hasright',
         ];
-        $writer = Writer::createFromPath($this->projectDir.self::OUTPUT_DIR.$filename, 'w');
-        $writer->insertOne($header);
-        $writer->insertAll($result);
+
+        //Creating a CSV file
+        try {
+            $writer = Writer::createFromPath(
+                $this->projectDir.self::OUTPUT_DIR.$filename,
+                'w'
+            );
+        } catch (\Exception $exception){
+            echo(sprintf(
+                "A CSV file could not be generated.\nPlease ensure the following output directory has been created: %s\n",
+                $this->projectDir.self::OUTPUT_DIR));
+            exit;
+        }
+
+        //Inserting header and result
+        try {
+            $writer->insertOne($header);
+            $writer->insertAll($result);
+        } catch (\Exception $exception){
+            echo("Results could not be written to the CSV file.");
+            exit;
+        }
     }
 }

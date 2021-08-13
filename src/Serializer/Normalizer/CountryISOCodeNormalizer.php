@@ -6,20 +6,19 @@ use App\Entity\Country;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Normalizer\{
     AbstractObjectNormalizer,
-    CacheableSupportsMethodInterface,
+    ContextAwareNormalizerInterface,
     DenormalizerInterface,
-    NormalizerInterface,
-    ObjectNormalizer
+    NormalizerAwareInterface,
+    NormalizerAwareTrait
 };
 
-class CountryISOCodeNormalizer implements NormalizerInterface, DenormalizerInterface, CacheableSupportsMethodInterface
+class CountryISOCodeNormalizer implements ContextAwareNormalizerInterface, DenormalizerInterface, NormalizerAwareInterface
 {
-    private const TRAIT = 'App\Entity\Traits\CountryTrait';
+    use NormalizerAwareTrait;
 
-    /**
-     * @var ObjectNormalizer
-     */
-    private $normalizer;
+    private const ALREADY_CALLED = 'COUNTRY_ISO_CODE_NORMALIZER_ALREADY_CALLED';
+
+    private const TRAIT = 'App\Entity\Traits\CountryTrait';
 
     /**
      * @var EntityManagerInterface
@@ -28,12 +27,10 @@ class CountryISOCodeNormalizer implements NormalizerInterface, DenormalizerInter
 
     /**
      * CountryISOCodeNormalizer constructor.
-     * @param ObjectNormalizer $normalizer
      * @param EntityManagerInterface $em
      */
-    public function __construct(ObjectNormalizer $normalizer, EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->normalizer = $normalizer;
         $this->em = $em;
     }
 
@@ -42,6 +39,8 @@ class CountryISOCodeNormalizer implements NormalizerInterface, DenormalizerInter
      */
     public function normalize($object, $format = null, array $context = []): array
     {
+        $context[self::ALREADY_CALLED] = true;
+
         $context[AbstractObjectNormalizer::CIRCULAR_REFERENCE_HANDLER] = function ($object, $format, $context) {
             return [$object->getId()];
         };
@@ -49,8 +48,7 @@ class CountryISOCodeNormalizer implements NormalizerInterface, DenormalizerInter
 
         if (isset($data['countryId'])) {
             $country = $this->em->getRepository(Country::class)
-                ->findOneBy(['id' => $data['countryId']])
-            ;
+                ->findOneBy(['id' => $data['countryId']]);
             $data['countryISOCode'] = $country->getCountry();
         }
 
@@ -60,17 +58,14 @@ class CountryISOCodeNormalizer implements NormalizerInterface, DenormalizerInter
     /**
      * @inheritDoc
      */
-    public function supportsNormalization($data, $format = null): bool
+    public function supportsNormalization($data, $format = null, array $context = []): bool
     {
-        return 'object' === gettype($data) && in_array(self::TRAIT, class_uses($data));
-    }
+        // avoid recursion: only call once per object
+        if (isset($context[self::ALREADY_CALLED])) {
+            return false;
+        }
 
-    /**
-     * @return bool
-     */
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return true;
+        return 'object' === gettype($data) && in_array(self::TRAIT, class_uses($data));
     }
 
     /**
@@ -80,8 +75,7 @@ class CountryISOCodeNormalizer implements NormalizerInterface, DenormalizerInter
     {
         if (isset($data['countryISOCode'])) {
             $country = $this->em->getRepository(Country::class)
-                ->findOneBy(['country' => $data['countryISOCode']])
-            ;
+                ->findOneBy(['country' => $data['countryISOCode']]);
             $data['countryId'] = $country->getId();
         }
 

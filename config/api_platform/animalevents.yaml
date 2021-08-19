@@ -34,7 +34,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[before]'
             in: query
-            description: 'Returns the animal event resoures occuring **before** or **on** a given event date<br><br>*For example: 2020-01-01*'
+            description: 'Returns the animal event resources occurring **before** or **on** a given event date<br><br>*For example: 2020-01-01*'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -45,7 +45,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[strictly_before]'
             in: query
-            description: 'Returns the animal event resoures occuring strictly **before** (not including) a given event date'
+            description: 'Returns the animal event resources occurring strictly **before** (not including) a given event date'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -56,7 +56,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[after]'
             in: query
-            description: 'Returns the animal event resoures occuring **after** or **on** a given event date'
+            description: 'Returns the animal event resources occurring **after** or **on** a given event date'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -67,7 +67,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[strictly_after]'
             in: query
-            description: 'Returns the animal event resoures occuring strictly **after** (not including) a given event date'
+            description: 'Returns the animal event resources occurring strictly **after** (not including) a given event date'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -126,6 +126,7 @@ App\Entity\AnimalEvent:
     custom_events:
       method: get
       path: /animal_events/{event_type}
+      filters: [ 'animalevent.search_filter', 'animalevent.date_filter', 'country_isocode_filter', 'property_filter' ]
       normalization_context:
         groups: [ 'animalevent:collection:get' ]
       requirements:
@@ -187,7 +188,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[before]'
             in: query
-            description: 'Returns the animal event resoures occuring **before** or **on** a given event date<br><br>*For example: 2020-01-01*'
+            description: 'Returns the animal event resources occurring **before** or **on** a given event date<br><br>*For example: 2020-01-01*'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -198,7 +199,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[strictly_before]'
             in: query
-            description: 'Returns the animal event resoures occuring strictly **before** (not including) a given event date'
+            description: 'Returns the animal event resources occurring strictly **before** (not including) a given event date'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -209,7 +210,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[after]'
             in: query
-            description: 'Returns the animal event resoures occuring **after** or **on** a given event date'
+            description: 'Returns the animal event resources occurring **after** or **on** a given event date'
             required: false
             deprecated: false
             allowEmptyValue: false
@@ -220,7 +221,7 @@ App\Entity\AnimalEvent:
             allowReserved: false
           - name: 'eventDate[strictly_after]'
             in: query
-            description: 'Returns the animal event resoures occuring strictly **after** (not including) a given event date'
+            description: 'Returns the animal event resources occurring strictly **after** (not including) a given event date'
             required: false
             deprecated: false
             allowEmptyValue: false
